@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Amortized Analysis - Accounting Method - Stack Simulation</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link rel="stylesheet" type="text/css" href="boxes.css" />
+
+    <!-- Latest compiled and minified CSS -->
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+      integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+      crossorigin="anonymous"
+    />
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    <!-- Optional theme -->
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css"
+      integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp"
+      crossorigin="anonymous"
+    />
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script
+      src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
+      integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+      crossorigin="anonymous"
+    ></script>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/core.js"></script> -->
+
+    <script src="jquery-1.7.2.min.js"></script>
+    <script src="jquery-ui.min.js"></script>
+    <script src="jquery.ui.touch-punch.min.js"></script>
+    <script src="jquery.alerts.js"></script>
+    <link
+      href="jquery.alerts.css"
+      rel="stylesheet"
+      type="text/css"
+      media="screen"
+    />
+
+    <script src="Stack.js"></script>
+    <script>
+      stack = new Stack();
+      var cr = 0;
+
+      function draw() {
+        var canvas = document.getElementById("canvas");
+        var context = canvas.getContext("2d");
+
+        canvas.width = window.innerWidth - 20;
+        canvas.height = window.innerHeight - 280;
+        context.clearRect(0, 0, canvas.width, canvas.height);
+
+        context.font = "14px sans-serif";
+        context.strokeStyle = "#100"; // Set a pen color
+
+        if (stack.isEmpty()) {
+          context.fillText("stack is empty", canvas.width / 2, 15);
+        } else {
+          // %%%%%%%%%%%%%%%%%%%%%%%%%%%
+          x = canvas.width / 2 - 30;
+
+          y = canvas.height - 30;
+          // %%%%%%%%%%%%%%%%%%%%%%%%%%%
+          rectWidth = 50;
+          rectHeight = 25;
+
+          myvar = stack.myvar;
+          for (var i = 0; i < myvar.length; i++) {
+            value = myvar[i];
+            context.fillText(myvar[i] + "", x + 15, y + 15);
+            context.rect(x, y, rectWidth, rectHeight);
+            y -= rectHeight;
+          }
+          context.fillText("Top", x - 85, y + rectHeight + 10);
+          context.fillText(
+            "Size : " + stack.getSize(),
+            x - 85,
+            y + rectHeight + 30
+          );
+
+          drawArrowLine(
+            context,
+            x - 45,
+            y + rectHeight + 10,
+            x,
+            y + rectHeight + 10
+          );
+        }
+
+        context.stroke();
+      }
+
+      function peek() {
+        if (stack.isEmpty()) {
+          jAlert("The stack is empty");
+        } else {
+          jAlert("The top element is " + stack.peek());
+        }
+      }
+
+      function pop() {
+        if (stack.isEmpty()) {
+          jAlert("The stack is empty");
+        } else {
+          stack.pop();
+          draw();
+          cr -= 1;
+          $("#credit").html(`<strong>` + cr + `</strong>`);
+        }
+        $("#data").html(`
+          <h6>Amortized Cost : 0 || Actual Cost : 1</h6>
+        `);
+      }
+
+      function multiPop(n) {
+        console.log(`in multipop`);
+        if (stack.isEmpty()) {
+          jAlert("The stack is empty! Index out of Bounds !");
+        } else {
+          for (i = 0; i < n; i++) {
+            //not this.pop((()))
+            pop();
+            draw();
+            // cr -= n;
+          }
+        }
+        // $("#credit").html(`<strong>` + cr + `</strong>`);
+        $("#data").html(`
+          <h6>Amortized Cost : 0 || Actual Cost : min(size, k)</h6>
+        `);
+      }
+
+      function push() {
+        var value = document.getElementById("value").value.trim();
+        if (value == "") {
+          jAlert("no value entered");
+        } else {
+          stack.push(value);
+          cr += 1;
+        }
+        $("#credit").html(`<strong>` + cr + `</strong>`);
+        $("#data").html(`
+          <h6>Amortized Cost : 2 || Actual Cost : 1</h6>
+        `);
+
+        draw();
+      }
+
+      function drawArrowLine(context, x1, y1, x2, y2) {
+        context.moveTo(x1, y1);
+        context.lineTo(x2, y2);
+
+        // find slope of this line
+        var slope = (y1 - y2) / (x1 - x2);
+
+        var arctan = Math.atan(slope);
+        var set45 = 1.57 / 2;
+
+        if (x1 < x2) {
+          // add 90 degrees to arrow lines
+          set45 = -1.57 * 1.5;
+        }
+        var arrlen = 15;
+
+        context.moveTo(x2, y2);
+        context.lineTo(
+          x2 + Math.cos(arctan + set45) * arrlen,
+          y2 + Math.sin(arctan + set45) * arrlen
+        );
+
+        context.moveTo(x2, y2);
+        context.lineTo(
+          x2 + Math.cos(arctan - set45) * arrlen,
+          y2 + Math.sin(arctan - set45) * arrlen
+        );
+      }
+
+      // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+      // $("#hello").click(function() {
+      //   // x = stack.getSize();
+      //   // console.log(x);
+      //   $("#credits").html(`<h3>` + `HELLO` + `</h3>`);
+      // });
+
+      function hellosay() {
+        x = stack.getSize();
+        console.log(x);
+        $("#credit").html(`<h3>` + x + `</h3>`);
+        // multiPop(2);
+        console.log("multipop");
+
+        // $.toast({
+        //   heading: "Colors",
+        //   text:
+        //     "Colors are specified using `bgColor` and `textColor` properties.",
+        //   bgColor: "#FF1356",
+        //   textColor: "white"
+        // });
+      }
+      // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    </script>
+  </head>
+
+  <body onload="draw()" onresize="draw()">
+    <!-- nav  -->
+    <nav class="navbar sticky-top navbar-dark bg-dark navbar-expand-sm">
+      <a class="navbar-brand" href="./index.html">
+        <img
+          src="https://image.flaticon.com/icons/svg/272/272369.svg"
+          width="30"
+          height="30"
+          alt="logo"
+        />
+        Amortized Analysis
+      </a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-toggle="collapse"
+        data-target="#navbar-list-2"
+        aria-controls="navbarNav"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbar-list-2">
+        <ul class="navbar-nav">
+          <li class="nav-item ">
+            <a class="nav-link" href="./index.html">Home </a>
+          </li>
+          <li class="nav-item ">
+            <a
+              class="nav-link"
+              href="https://colab.research.google.com/drive/12R3_Nr6Tud2pSyWGs8fIieasntlLeR_K"
+              >Aggregate Analysis</a
+            >
+          </li>
+          <li class="nav-item active">
+            <a class="nav-link" href="#"
+              >Accounting Method<span class="sr-only">(current)</span></a
+            >
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">Potential Method</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+    <!-- end of nav  -->
+
+    <div class="fluid">
+      <h4 style="color:rgb(32, 19, 8) ; text-align: center ">
+        Accounting Method
+        <br />
+        <small>(Simulation using a Stack)</small>
+      </h4>
+      <div
+        style="margin: 0px auto; border: 1px solid #EB0D1B; text-align: right"
+      >
+        <canvas id="canvas" width="200" height="300"></canvas>
+      </div>
+
+      <div style="text-align: center; margin-top: 1em">
+        <!-- <span style="border: 1px solid #37826C; padding: 3px"> -->
+        Enter Element Value:
+        <input
+          type="text"
+          value=""
+          id="value"
+          style="width: 3em; text-align: right ;"
+        />
+
+        <button
+          type="button"
+          class="btn-success"
+          style=" border-radius: 5px  ;margin-right: 1%"
+          onclick="push()"
+        >
+          Push
+        </button>
+        <button
+          type="button"
+          class="btn-warning"
+          onclick="pop()"
+          style=" border-radius: 5px;margin-right: 1%"
+        >
+          Pop
+        </button>
+        <button
+          type="button"
+          class="btn-primary"
+          onclick="peek()"
+          style=" border-radius: 5px;margin-right: 1%"
+        >
+          Peek
+        </button>
+        <!-- <button
+          class="btn-warning"
+          id="hello"
+          onclick="hellosay()"
+          style=" border-radius: 5px"
+        >
+          HELLO
+        </button> -->
+        Enter 'k':
+        <input
+          type="text"
+          value=""
+          id="nval"
+          style="width: 3em; text-align: right ;"
+        />
+
+        <button
+          class="btn-danger"
+          id="multipopper"
+          onclick="multiPop($('#nval').val())"
+          style=" border-radius: 5px"
+        >
+          multiPop
+        </button>
+
+        <!-- %%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+        <!-- %%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+        <div class="row">
+          <div class="col-md-4">
+            <!-- <div id="data">
+              <h6>Amortized Cost : 2</h6>
+
+              <h6>Actual Cost : 1</h6>
+            </div> -->
+          </div>
+          <div class="col-md-4">
+            <div>
+              <span id="data" style="margin-top: 1%"></span>
+              <h5>
+                Credits :
+                <br />
+                <span id="credit">0</span>
+              </h5>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
